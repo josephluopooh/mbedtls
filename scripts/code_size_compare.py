@@ -18,6 +18,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import typing
 from enum import Enum
 
@@ -814,9 +815,18 @@ class CodeSizeComparison:
 
             self.logger.debug("Generating code size csv for {}."
                               .format(size_dist_info.git_rev))
-            output = open(output_file, "w")
-            self.code_size_generator.write_record(
-                size_dist_info.git_rev, code_size_text, output)
+            temporary = None
+            try:
+                with tempfile.NamedTemporaryFile(mode="w", dir=self.csv_dir,
+                                                 delete=False) as output:
+                    temporary = output.name
+                    self.code_size_generator.write_record(
+                        size_dist_info.git_rev, code_size_text, output)
+                os.replace(temporary, output_file)
+                temporary = None
+            finally:
+                if temporary is not None:
+                    os.unlink(temporary)
 
     def gen_code_size_comparison(self) -> None:
         """Generate results of code size changes between two Git revisions,

@@ -1,0 +1,3 @@
+Bugfix
+   * Write code size records atomically so failed generation cannot leave
+     partial measurements in the cache.

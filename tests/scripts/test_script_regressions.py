@@ -184,3 +184,24 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('1 suites, 1 tests run, 1 suites skipped', result.stdout)
 
+
+    def test_failed_size_record_preserves_previous_file(self):
+        comparison = object.__new__(sizes.CodeSizeComparison)
+        comparison.logger = mock.Mock()
+        comparison.csv_dir = str(self.directory)
+        comparison.size_common_info = sizes.CodeSizeCommonInfo('x86_64', 'size -t')
+        info = sizes.CodeSizeDistinctInfo('new', 'current', 'x86_64', 'default', 'cc', '-Os')
+        record = self.directory / (info.get_info_indication() + '-size.csv')
+        record.write_text('previous record')
+        comparison.cal_code_size = mock.Mock(return_value={})
+        comparison.code_size_generator = mock.Mock()
+        def fail(_revision, _data, output):
+            output.write('partial record')
+            output.flush()
+            raise ValueError('invalid measurement')
+        comparison.code_size_generator.write_record.side_effect = fail
+        with self.assertRaises(ValueError):
+            comparison.gen_code_size_report(info)
+        self.assertEqual(record.read_text(), 'previous record')
+        self.assertEqual(list(self.directory.iterdir()), [record])
+
