@@ -1,0 +1,3 @@
+Bugfix
+   * Preserve object filenames containing spaces and avoid treating similarly
+     named objects as module totals when loading code size records.

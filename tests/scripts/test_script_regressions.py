@@ -205,3 +205,17 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(record.read_text(), 'previous record')
         self.assertEqual(list(self.directory.iterdir()), [record])
 
+
+    def test_size_record_filenames_round_trip(self):
+        generator = sizes.CodeSizeGeneratorWithSize(logging.getLogger(__name__))
+        text = ('text data bss dec hex filename\n'
+                '1 2 3 6 6 a file.o (ex archive.a)\n'
+                '1 2 3 6 6 TLS-TOTALS_extra.o (ex archive.a)\n'
+                '2 4 6 12 c (TOTALS)\n')
+        record = self.directory / 'record.txt'
+        with record.open('w') as output:
+            generator.write_record('old', {'TLS': text}, output)
+        generator.read_size_record('new', str(record))
+        self.assertEqual(set(generator.code_size['new']['TLS']),
+                         {'a file.o', 'TLS-TOTALS_extra.o', 'TLS-TOTALS'})
+

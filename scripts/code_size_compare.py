@@ -519,10 +519,11 @@ class CodeSizeGeneratorWithSize(CodeSizeGenerator):
         """
         size_record = {}
         for line in size_text.splitlines()[1:]:
-            data = line.split()
+            data = line.split(maxsplit=5)
             if not data:
                 continue
-            if re.match(r'\s*\(TOTALS\)', data[5]):
+            data[5] = data[5].split(' (ex ', 1)[0]
+            if data[5] == '(TOTALS)':
                 data[5] = mod + self.mod_total_suffix
             # file_name: SizeEntry(text, data, bss, dec)
             size_record[data[5]] = CodeSizeGeneratorWithSize.SizeEntry(
@@ -538,11 +539,11 @@ class CodeSizeGeneratorWithSize(CodeSizeGenerator):
         size_record = {}
         with open(fname, 'r') as csv_file:
             for line in csv_file:
-                data = line.strip().split()
+                data = line.strip().rsplit(maxsplit=4)
                 if not data:
                     continue
                 # check if we find the beginning of a module
-                if data and data[0] in MBEDTLS_STATIC_LIB:
+                if len(data) == 1 and data[0] in MBEDTLS_STATIC_LIB:
                     mod = data[0]
                     continue
 
@@ -552,8 +553,7 @@ class CodeSizeGeneratorWithSize(CodeSizeGenerator):
                         int(data[1]), int(data[2]), int(data[3]), int(data[4]))
 
                 # check if we hit record for the end of a module
-                m = re.match(r'\w+' + self.mod_total_suffix, line)
-                if m:
+                if mod and data[0] == mod + self.mod_total_suffix:
                     if git_rev in self.code_size:
                         self.code_size[git_rev].update({mod: size_record})
                     else:
