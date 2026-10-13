@@ -1,0 +1,3 @@
+Bugfix
+   * Include optimization levels in code size record names to avoid reusing
+     measurements from a different optimization level.

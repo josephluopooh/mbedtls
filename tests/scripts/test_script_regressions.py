@@ -125,3 +125,11 @@ class ScriptRegressions(unittest.TestCase):
         record.write_text('TLS\n\nsample.o 1 2 3 6\n\nTLS-TOTALS 1 2 3 6\n')
         generator.read_size_record('new', str(record))
         self.assertEqual(generator.code_size['new']['TLS']['sample.o'].total, 6)
+
+    def test_size_cache_includes_optimization(self):
+        small = sizes.CodeSizeDistinctInfo('old', 'abc123', 'x86_64',
+                                            'default', 'cc', '-Os')
+        fast = sizes.CodeSizeDistinctInfo('new', 'abc123', 'x86_64',
+                                           'default', 'cc', '-O2')
+        self.assertNotEqual(small.get_info_indication(), fast.get_info_indication())
+

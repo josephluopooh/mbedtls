@@ -81,7 +81,7 @@ class CodeSizeDistinctInfo: # pylint: disable=too-few-public-methods
 
     def get_info_indication(self):
         """Return a unique string to indicate Code Size Distinct Information."""
-        return '{git_rev}-{arch}-{config}-{compiler}'.format(**self.__dict__)
+        return '{git_rev}-{arch}-{config}-{compiler}-{opt_level}'.format(**self.__dict__)
 
 
 class CodeSizeCommonInfo: # pylint: disable=too-few-public-methods
