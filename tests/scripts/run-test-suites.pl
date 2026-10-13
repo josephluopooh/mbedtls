@@ -53,11 +53,8 @@ die "$0: no test suite found\n" unless @suites;
 # but not "test_suite_foobar".
 my $skip_re =
     ( '\Atest_suite_(' .
-      join('|', map {
-          s/[ ,;]/|/g; # allow any of " ,;|" as separators
-          s/\./\./g; # "." in the input means ".", not "any character"
-          $_
-      } @skip_patterns) .
+      join('|', map { quotemeta($_) }
+           map { split /[ ,;|]+/ } @skip_patterns) .
       ')(\z|\.)' );
 
 # in case test suites are linked dynamically

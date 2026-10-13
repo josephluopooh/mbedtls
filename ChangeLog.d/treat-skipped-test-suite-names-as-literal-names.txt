@@ -1,0 +1,2 @@
+Bugfix
+   * Match literal test suite names in --skip, including dots and regex symbols.

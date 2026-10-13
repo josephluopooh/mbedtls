@@ -171,3 +171,16 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.output.read_text().count('OUTPUT_MACRO_NAME_VALUE(MBEDTLS_TEST)'), 1)
 
+
+    def test_skip_suite_literal_dot(self):
+        for name in ('test_suite_foo.bar', 'test_suite_fooXbar'):
+            suite = self.directory / name
+            suite.write_text('#!/bin/sh\necho "1 / 1 tests (0 skipped)"\n')
+            suite.chmod(0o700)
+            (self.directory / (name + '.datax')).write_text('')
+        result = subprocess.run(['perl', str(ROOT / 'tests/scripts/run-test-suites.pl'),
+                                 '--skip=foo.bar'], cwd=self.directory,
+                                capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('1 suites, 1 tests run, 1 suites skipped', result.stdout)
+
