@@ -46,7 +46,7 @@ my $in_section = 0;
 
 while (my $line = <CONFIG_H>)
 {
-    next if ($in_section && $line !~ /#define/ && $line !~ /SECTION/);
+    next if ($in_section && $line !~ /#\s*define\s/ && $line !~ /SECTION/);
     next if (!$in_section && $line !~ /SECTION/);
 
     if ($in_section) {
@@ -55,7 +55,7 @@ while (my $line = <CONFIG_H>)
             next;
         }
         # Strip leading MBEDTLS_ to save binary size
-        my ($mbedtls_prefix, $define) = $line =~ /#define (MBEDTLS_)?(\w+)/;
+        my ($mbedtls_prefix, $define) = $line =~ /#\s*define\s+(MBEDTLS_)?(\w+)/;
         if (!$mbedtls_prefix) {
             die "Feature does not start with 'MBEDTLS_': $line\n";
         }

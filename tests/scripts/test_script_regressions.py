@@ -51,3 +51,17 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(r'SSL - The \"quoted\" value is invalid', self.output.read_text())
 
+
+    def test_feature_preprocessor_whitespace(self):
+        (self.directory / 'mbedtls_config.h').write_text(
+            '// SECTION: TLS feature selection\n'
+            '#define\tMBEDTLS_SSL_TLS_C\n'
+            '# define   MBEDTLS_SSL_CLI_C\n'
+            '//#define MBEDTLS_SSL_SRV_C\n')
+        (self.directory / 'version_features.fmt').write_text('FEATURE_DEFINES\n')
+        result = self.run_script('generate_features.pl', self.directory,
+                                 self.directory, self.output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        for name in ('SSL_TLS_C', 'SSL_CLI_C', 'SSL_SRV_C'):
+            self.assertIn('"' + name + '"', self.output.read_text())
+

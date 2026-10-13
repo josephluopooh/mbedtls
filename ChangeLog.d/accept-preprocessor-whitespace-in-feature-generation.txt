@@ -1,0 +1,2 @@
+Bugfix
+   * Recognize tabs and other legal preprocessor whitespace in feature definitions.
