@@ -73,8 +73,9 @@ for my $config_file ($mbedtls_config_file, $psa_crypto_config_file) {
     open(CONFIG_FILE, "<", $config_file) or die "Opening config file '$config_file': $!";
 
     while (my $line = <CONFIG_FILE>) {
-        if ($line =~ /^(\/\/)?\s*#\s*define\s+(MBEDTLS_\w+|PSA_WANT_\w+).*/) {
+        if ($line =~ /^(\/\/)?\s*#\s*define\s+(MBEDTLS_\w+|PSA_WANT_\w+)(.*)/) {
             my $name = $2;
+            next if $3 =~ /^\(/;  # Function-like macros cannot be queried as values.
 
             # Skip over the macro if it is in the excluded list
             next if $name =~ /$excluded_re/;

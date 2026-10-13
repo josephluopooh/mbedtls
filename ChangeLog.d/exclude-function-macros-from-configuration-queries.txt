@@ -1,0 +1,2 @@
+Bugfix
+   * Exclude function-like configuration macros from generated value queries.

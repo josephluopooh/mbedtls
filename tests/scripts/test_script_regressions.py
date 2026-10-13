@@ -65,3 +65,19 @@ class ScriptRegressions(unittest.TestCase):
         for name in ('SSL_TLS_C', 'SSL_CLI_C', 'SSL_SRV_C'):
             self.assertIn('"' + name + '"', self.output.read_text())
 
+
+    def test_query_ignores_function_macros(self):
+        config = self.directory / 'config.h'
+        config.write_text('#define MBEDTLS_CALLBACK(x) (x)\n'
+                          '#define MBEDTLS_CALLBACK_VALUE (1)\n')
+        psa = self.directory / 'psa.h'
+        psa.write_text('')
+        template = self.directory / 'query.fmt'
+        template.write_text('CHECK_CONFIG\nLIST_CONFIG\n')
+        result = self.run_script('generate_query_config.pl', config, psa,
+                                 template, self.output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        generated = self.output.read_text()
+        self.assertNotIn('defined(MBEDTLS_CALLBACK)', generated)
+        self.assertIn('defined(MBEDTLS_CALLBACK_VALUE)', generated)
+
