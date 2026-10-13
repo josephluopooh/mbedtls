@@ -1,0 +1,3 @@
+Bugfix
+   * Accept explicit and cross-toolchain size command paths without placing
+     directory separators in generated record filenames.

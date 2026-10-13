@@ -16,6 +16,7 @@ import logging
 import os
 import re
 import shutil
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -101,8 +102,7 @@ class CodeSizeCommonInfo: # pylint: disable=too-few-public-methods
 
     def get_info_indication(self):
         """Return a unique string to indicate Code Size Common Information."""
-        return '{measure_tool}'\
-               .format(measure_tool=self.measure_cmd.strip().split(' ')[0])
+        return os.path.basename(shlex.split(self.measure_cmd)[0])
 
 class CodeSizeResultInfo: # pylint: disable=too-few-public-methods
     """Data structure to store result options for code size comparison."""
@@ -772,7 +772,8 @@ class CodeSizeComparison:
 
     def __generate_size_parser(self):
         """Generate a parser for the corresponding measurement tool."""
-        if re.match(r'size', self.size_common_info.measure_cmd.strip()):
+        tool = self.size_common_info.get_info_indication()
+        if tool == 'size' or tool.endswith('-size'):
             return CodeSizeGeneratorWithSize(self.logger)
         else:
             self.logger.error("Unsupported measurement tool: `{}`."

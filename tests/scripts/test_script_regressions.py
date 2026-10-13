@@ -219,3 +219,13 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(set(generator.code_size['new']['TLS']),
                          {'a file.o', 'TLS-TOTALS_extra.o', 'TLS-TOTALS'})
 
+
+    def test_size_tool_paths(self):
+        comparison = object.__new__(sizes.CodeSizeComparison)
+        comparison.logger = mock.Mock()
+        for command in ('/usr/bin/size -t', 'arm-none-eabi-size -t', '"/path with spaces/size" -t'):
+            common = sizes.CodeSizeCommonInfo('x86_64', command)
+            comparison.size_common_info = common
+            self.assertNotIn('/', common.get_info_indication())
+            parser = comparison._CodeSizeComparison__generate_size_parser()
+            self.assertIsInstance(parser, sizes.CodeSizeGeneratorWithSize)
