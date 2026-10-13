@@ -144,3 +144,16 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('"X509_USE_C"', self.output.read_text())
 
+
+    def test_query_indented_comments(self):
+        config = self.directory / 'config.h'
+        config.write_text('  //#define MBEDTLS_SSL_TEST_FEATURE\n')
+        psa = self.directory / 'psa.h'
+        psa.write_text('')
+        template = self.directory / 'query.fmt'
+        template.write_text('CHECK_CONFIG\nLIST_CONFIG\n')
+        result = self.run_script('generate_query_config.pl', config, psa,
+                                 template, self.output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('defined(MBEDTLS_SSL_TEST_FEATURE)', self.output.read_text())
+

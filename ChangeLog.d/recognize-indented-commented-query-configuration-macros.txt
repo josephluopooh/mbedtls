@@ -1,0 +1,2 @@
+Bugfix
+   * Include indented commented configuration macros in generated queries.
