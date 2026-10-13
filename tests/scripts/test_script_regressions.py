@@ -84,14 +84,23 @@ class ScriptRegressions(unittest.TestCase):
 
     def test_size_build_restores_configuration_on_failure(self):
         calculator = self.calculator()
-        with mock.patch.object(calculator, 'backup_config_files') as backup, \
-                mock.patch.object(sizes.subprocess, 'check_output',
-                                  side_effect=subprocess.CalledProcessError(1, 'make')):
+        config = self.directory / 'mbedtls_config.h'
+        crypto = self.directory / 'crypto_config.h'
+        config.write_text('original TLS config')
+        crypto.write_text('original crypto config')
+
+        def failed_build(*_args, **_kwargs):
+            config.write_text('temporary TLS config')
+            crypto.write_text('temporary crypto config')
+            raise subprocess.CalledProcessError(1, 'make')
+
+        with mock.patch.object(sizes, 'CONFIG_H', str(config)), \
+                mock.patch.object(sizes, 'CRYPTO_CONFIG_H', str(crypto)), \
+                mock.patch.object(sizes.subprocess, 'check_output', side_effect=failed_build):
             with self.assertRaises(SystemExit):
                 calculator._build_libraries('.')
-        self.assertEqual(backup.call_args_list,
-                         [mock.call(restore=False), mock.call(restore=True)])
-
+        self.assertEqual(config.read_text(), 'original TLS config')
+        self.assertEqual(crypto.read_text(), 'original crypto config')
 
     def test_size_failure_removes_worktree_once(self):
         calculator = self.calculator()
@@ -104,3 +113,15 @@ class ScriptRegressions(unittest.TestCase):
                 calculator.cal_libraries_code_size()
         remove.assert_called_once_with('temp-example')
 
+
+    def test_size_records_accept_blank_lines(self):
+        generator = sizes.CodeSizeGeneratorWithSize(logging.getLogger(__name__))
+        generator._set_size_record('old', 'TLS',
+                                   'text data bss dec hex filename\n\n'
+                                   '1 2 3 6 6 sample.o\n\n'
+                                   '1 2 3 6 6 (TOTALS)\n')
+        self.assertEqual(generator.code_size['old']['TLS']['sample.o'].total, 6)
+        record = self.directory / 'record.txt'
+        record.write_text('TLS\n\nsample.o 1 2 3 6\n\nTLS-TOTALS 1 2 3 6\n')
+        generator.read_size_record('new', str(record))
+        self.assertEqual(generator.code_size['new']['TLS']['sample.o'].total, 6)

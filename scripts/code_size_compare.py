@@ -519,6 +519,8 @@ class CodeSizeGeneratorWithSize(CodeSizeGenerator):
         size_record = {}
         for line in size_text.splitlines()[1:]:
             data = line.split()
+            if not data:
+                continue
             if re.match(r'\s*\(TOTALS\)', data[5]):
                 data[5] = mod + self.mod_total_suffix
             # file_name: SizeEntry(text, data, bss, dec)
@@ -536,6 +538,8 @@ class CodeSizeGeneratorWithSize(CodeSizeGenerator):
         with open(fname, 'r') as csv_file:
             for line in csv_file:
                 data = line.strip().split()
+                if not data:
+                    continue
                 # check if we find the beginning of a module
                 if data and data[0] in MBEDTLS_STATIC_LIB:
                     mod = data[0]

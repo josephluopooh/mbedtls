@@ -1,0 +1,2 @@
+Bugfix
+   * Ignore empty lines when reading raw and saved code-size measurements.
