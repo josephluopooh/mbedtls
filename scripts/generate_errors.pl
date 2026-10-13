@@ -119,6 +119,7 @@ foreach my $match (@matches)
         if( $error_codes_seen{$error_code}++ );
 
     $description =~ s/\\/\\\\/g;
+    $description =~ s/"/\\"/g;
 
     my ($module_name) = $error_name =~ /^MBEDTLS_ERR_([^_]+)/;
 

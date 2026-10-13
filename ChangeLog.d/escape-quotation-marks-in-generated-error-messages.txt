@@ -1,0 +1,2 @@
+Bugfix
+   * Escape double quotes in error descriptions when generating C strings.
