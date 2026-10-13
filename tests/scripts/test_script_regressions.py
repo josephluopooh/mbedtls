@@ -133,3 +133,14 @@ class ScriptRegressions(unittest.TestCase):
                                            'default', 'cc', '-O2')
         self.assertNotEqual(small.get_info_indication(), fast.get_info_indication())
 
+
+    def test_feature_adjacent_sections(self):
+        (self.directory / 'mbedtls_config.h').write_text(
+            '// SECTION: TLS feature selection\n#define MBEDTLS_SSL_TLS_C\n'
+            '// SECTION: X.509 feature selection\n#define MBEDTLS_X509_USE_C\n')
+        (self.directory / 'version_features.fmt').write_text('FEATURE_DEFINES\n')
+        result = self.run_script('generate_features.pl', self.directory,
+                                 self.directory, self.output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('"X509_USE_C"', self.output.read_text())
+

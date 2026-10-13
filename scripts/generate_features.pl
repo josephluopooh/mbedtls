@@ -46,14 +46,14 @@ my $in_section = 0;
 
 while (my $line = <CONFIG_H>)
 {
-    next if ($in_section && $line !~ /#\s*define\s/ && $line !~ /SECTION/);
-    next if (!$in_section && $line !~ /SECTION/);
+    if ($line =~ /SECTION:\s*([\w. ]*\w)/) {
+        my $section_name = $1;
+        $in_section = grep $_ eq $section_name, @sections;
+        next;
+    }
+    next unless $in_section && $line =~ /#\s*define\s/;
 
     if ($in_section) {
-        if ($line =~ /SECTION/) {
-            $in_section = 0;
-            next;
-        }
         # Strip leading MBEDTLS_ to save binary size
         my ($mbedtls_prefix, $define) = $line =~ /#\s*define\s+(MBEDTLS_)?(\w+)/;
         if (!$mbedtls_prefix) {
@@ -64,12 +64,6 @@ while (my $line = <CONFIG_H>)
         $feature_defines .= "#endif /* MBEDTLS_${define} */\n";
     }
 
-    if (!$in_section) {
-        my ($section_name) = $line =~ /SECTION: ([\w ]+)/;
-        my $found_section = grep $_ eq $section_name, @sections;
-
-        $in_section = 1 if ($found_section);
-    }
 };
 
 $feature_format =~ s/FEATURE_DEFINES\n/$feature_defines/g;

@@ -1,0 +1,2 @@
+Bugfix
+   * Retain features when two selected configuration sections are adjacent.
