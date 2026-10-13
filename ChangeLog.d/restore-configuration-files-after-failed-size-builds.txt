@@ -1,0 +1,2 @@
+Bugfix
+   * Restore the current configuration when code-size measurement builds fail.

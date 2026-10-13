@@ -342,9 +342,11 @@ class CodeSizeCalculator:
         self.logger.debug("Building library/*.o for {}."
                           .format(self.git_rev))
         my_environment = os.environ.copy()
+        backed_up = False
         try:
             if self.git_rev == 'current':
                 self.backup_config_files(restore=False)
+                backed_up = True
             for pre_cmd in self.pre_make_cmd:
                 subprocess.check_output(
                     pre_cmd, env=my_environment, shell=True,
@@ -361,10 +363,11 @@ class CodeSizeCalculator:
                 cwd=git_worktree_path, stderr=subprocess.STDOUT,
                 universal_newlines=True
             )
-            if self.git_rev == 'current':
-                self.backup_config_files(restore=True)
         except subprocess.CalledProcessError as e:
             self._handle_called_process_error(e, git_worktree_path)
+        finally:
+            if backed_up:
+                self.backup_config_files(restore=True)
 
     def _gen_raw_code_size(self, git_worktree_path: str) -> typing.Dict[str, str]:
         """Measure code size by a tool and return in UTF-8 encoding."""

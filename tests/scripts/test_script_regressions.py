@@ -81,3 +81,14 @@ class ScriptRegressions(unittest.TestCase):
         self.assertNotIn('defined(MBEDTLS_CALLBACK)', generated)
         self.assertIn('defined(MBEDTLS_CALLBACK_VALUE)', generated)
 
+
+    def test_size_build_restores_configuration_on_failure(self):
+        calculator = self.calculator()
+        with mock.patch.object(calculator, 'backup_config_files') as backup, \
+                mock.patch.object(sizes.subprocess, 'check_output',
+                                  side_effect=subprocess.CalledProcessError(1, 'make')):
+            with self.assertRaises(SystemExit):
+                calculator._build_libraries('.')
+        self.assertEqual(backup.call_args_list,
+                         [mock.call(restore=False), mock.call(restore=True)])
+
