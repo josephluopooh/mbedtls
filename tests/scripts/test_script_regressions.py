@@ -157,3 +157,17 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('defined(MBEDTLS_SSL_TEST_FEATURE)', self.output.read_text())
 
+
+    def test_query_duplicate_definitions(self):
+        config = self.directory / 'config.h'
+        config.write_text('#if SOME_CONDITION\n#define MBEDTLS_TEST 1\n'
+                          '#else\n#define MBEDTLS_TEST 2\n#endif\n')
+        psa = self.directory / 'psa.h'
+        psa.write_text('')
+        template = self.directory / 'query.fmt'
+        template.write_text('CHECK_CONFIG\nLIST_CONFIG\n')
+        result = self.run_script('generate_query_config.pl', config, psa,
+                                 template, self.output)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.output.read_text().count('OUTPUT_MACRO_NAME_VALUE(MBEDTLS_TEST)'), 1)
+

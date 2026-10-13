@@ -1,0 +1,2 @@
+Bugfix
+   * Emit each query configuration macro once even with conditional definitions.

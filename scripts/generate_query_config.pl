@@ -65,6 +65,7 @@ my $excluded_re = join '|', @excluded;
 # format file
 my $config_check = "";
 my $list_config = "";
+my %seen;
 
 for my $config_file ($mbedtls_config_file, $psa_crypto_config_file) {
 
@@ -79,6 +80,7 @@ for my $config_file ($mbedtls_config_file, $psa_crypto_config_file) {
 
             # Skip over the macro if it is in the excluded list
             next if $name =~ /$excluded_re/;
+            next if $seen{$name}++;
 
             $config_check .= <<EOT;
 #if defined($name)
