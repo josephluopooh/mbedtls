@@ -92,3 +92,15 @@ class ScriptRegressions(unittest.TestCase):
         self.assertEqual(backup.call_args_list,
                          [mock.call(restore=False), mock.call(restore=True)])
 
+
+    def test_size_failure_removes_worktree_once(self):
+        calculator = self.calculator()
+        calculator.git_rev = 'example'
+        with mock.patch.object(calculator, '_create_git_worktree', return_value='temp-example'), \
+                mock.patch.object(calculator, '_remove_worktree') as remove, \
+                mock.patch.object(sizes.subprocess, 'check_output',
+                                  side_effect=subprocess.CalledProcessError(1, 'make')):
+            with self.assertRaises(SystemExit):
+                calculator.cal_libraries_code_size()
+        remove.assert_called_once_with('temp-example')
+

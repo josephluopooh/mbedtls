@@ -1,0 +1,2 @@
+Bugfix
+   * Avoid a second worktree removal masking the original code-size build failure.

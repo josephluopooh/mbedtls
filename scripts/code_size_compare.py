@@ -409,8 +409,7 @@ class CodeSizeCalculator:
         self.logger.error(e, exc_info=True)
         self.logger.error("Process output:\n {}".format(e.output))
 
-        # Quit gracefully by removing the existing worktree
-        self._remove_worktree(git_worktree_path)
+        # cal_libraries_code_size removes the worktree in its finally block.
         sys.exit(-1)
 
     def cal_libraries_code_size(self) -> typing.Dict[str, str]:
